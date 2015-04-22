@@ -1,0 +1,285 @@
+---
+deployment: cf
+
+jobs:
+  - name: nats
+    template:
+      - nats
+      - nats_stream_forwarder
+  - name: nfs_server
+    template:
+      - debian_nfs_server
+  - name: database
+    template:
+      - postgres
+  - name: ccdb
+    template:
+      - postgres
+  - name: uaadb
+    template:
+      - postgres
+  - name: cloud_controller_ng
+    template:
+      - cloud_controller_ng
+      - cloud_controller_worker
+      - cloud_controller_clock
+  - name: gorouter
+    template:
+      - gorouter
+  - name: uaa
+    template:
+      - uaa
+  - name: hm9000
+    template:
+      - hm9000
+  - name: haproxy
+    template:
+      - haproxy
+  - name: dea
+    template:
+      - dea_logging_agent
+      - dea_next
+  - name: etcd
+    template:
+      - etcd
+  - name: syslog_aggregator 
+    template:
+      - syslog_aggregator
+  - name: loggregator
+    template:
+      - loggregator
+      - loggregator_trafficcontroller
+  - name: login
+    template:
+      - login
+  - name: collector
+    template:
+      - collector
+
+properties:
+  networks:
+    apps: default
+
+  domain: cf.local
+  ssl:
+    skip_cert_verify: true
+  system_domain: cf.local
+  system_domain_organization: DevBox
+  app_domains:
+    - cf.local
+
+  disk_quota_enabled: true
+
+  syslog_aggregator:
+    address: 192.168.10.10
+  syslog_aggregator:
+    port: 54321
+
+  nats:
+    user: nats
+    password: c1oudc0w
+    address: 192.168.10.10
+    port: 4222
+    machines:
+      - 192.168.10.10
+
+  dea_next: {}
+
+  directory_server_protocol: http
+
+  logger_endpoint:
+    shared_secret: c1oudc0w
+
+  nfs_server:
+    address: 192.168.10.10
+    network: 192.168.10.0/24
+
+  cc: &cc
+    bulk_api_password: c1oudc0w
+    srv_api_uri: http://api.cf.local
+    db_logging_level: debug2
+    ccng.logging_level: debug2
+    db_encryption_key: c1oudc0w
+    quota_definitions:
+      default:
+        memory_limit: 10240
+        total_services: 100
+        non_basic_services_allowed: true
+        total_routes: 1000
+        trial_db_allowed: true
+    hm9000_noop: false
+    staging_upload_user: uploaduser
+    staging_upload_password: c1oudc0w
+    install_buildpacks:
+      - name: java_buildpack
+        package: buildpack_java
+      - name: ruby_buildpack
+        package: buildpack_ruby
+      - name: nodejs_buildpack
+        package: buildpack_nodejs
+  ccng: *cc
+
+  ccdb: &ccdb
+    db_scheme: postgres
+    address: 192.168.10.10
+    port: 5524
+    roles:
+      - tag: admin
+        name: ccadmin
+        password: c1oudc0w
+    databases:
+      - tag: cc
+        name: ccdb
+        citext: true
+  ccdb_ng: *ccdb
+
+  uaadb:
+    db_scheme: postgresql
+    address: 192.168.10.10
+    port: 5524
+    roles:
+      - tag: admin
+        name: uaaadmin
+        password: c1oudc0w
+    databases:
+      - tag: uaa
+        name: uaadb
+        citext: true
+
+  databases:
+    db_scheme: postgres
+    address: 192.168.10.10
+    port: 5524
+    roles:
+      - tag: admin
+        name: ccadmin
+        password: c1oudc0w
+      - tag: admin
+        name: uaaadmin
+        password: c1oudc0w
+    databases:
+      - tag: cc
+        name: ccdb
+        citext: true
+      - tag: uaa
+        name: uaadb
+        citext: true
+  db: databases
+
+  uaa:
+    login:
+      addnew: false
+    url: http://uaa.cf.local
+    no_ssl: true
+    catalina_opts: -Xmx384m -XX:MaxPermSize=128m
+    jwt:
+      signing_key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIICXAIBAAKBgQDHFr+KICms+tuT1OXJwhCUmR2dKVy7psa8xzElSyzqx7oJyfJ1
+        JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMXqHxf+ZH9BL1gk9Y6kCnbM5R6
+        0gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBugspULZVNRxq7veq/fzwIDAQAB
+        AoGBAJ8dRTQFhIllbHx4GLbpTQsWXJ6w4hZvskJKCLM/o8R4n+0W45pQ1xEiYKdA
+        Z/DRcnjltylRImBD8XuLL8iYOQSZXNMb1h3g5/UGbUXLmCgQLOUUlnYt34QOQm+0
+        KvUqfMSFBbKMsYBAoQmNdTHBaz3dZa8ON9hh/f5TT8u0OWNRAkEA5opzsIXv+52J
+        duc1VGyX3SwlxiE2dStW8wZqGiuLH142n6MKnkLU4ctNLiclw6BZePXFZYIK+AkE
+        xQ+k16je5QJBAN0TIKMPWIbbHVr5rkdUqOyezlFFWYOwnMmw/BKa1d3zp54VP/P8
+        +5aQ2d4sMoKEOfdWH7UqMe3FszfYFvSu5KMCQFMYeFaaEEP7Jn8rGzfQ5HQd44ek
+        lQJqmq6CE2BXbY/i34FuvPcKU70HEEygY6Y9d8J3o6zQ0K9SYNu+pcXt4lkCQA3h
+        jJQQe5uEGJTExqed7jllQ0khFJzLMx0K6tj0NeeIzAaGCQz13oo2sCdeGRHO4aDh
+        HH6Qlq/6UOV5wP8+GAcCQFgRCcB+hrje8hfEEefHcFpyKH+5g1Eu1k0mLrxK2zd+
+        4SlotYRHgPCEubokb2S1zfZDWIXW3HmggnGgM949TlY=
+        -----END RSA PRIVATE KEY-----
+      verification_key: |
+        -----BEGIN PUBLIC KEY-----
+        MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHFr+KICms+tuT1OXJwhCUmR2d
+        KVy7psa8xzElSyzqx7oJyfJ1JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMX
+        qHxf+ZH9BL1gk9Y6kCnbM5R60gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBug
+        spULZVNRxq7veq/fzwIDAQAB
+        -----END PUBLIC KEY-----
+    cc:
+      client_secret: c1oudc0w
+    admin:
+      client_secret: c1oudc0w
+    batch:
+      username: batch-username
+      password: c1oudc0w
+    clients: {}
+    scim:
+      users:
+      - admin|c1oudc0w|scim.write,scim.read,openid,cloud_controller.admin
+
+  etcd:
+    machines:
+      - 192.168.10.10
+
+  router:
+    port: 8888
+    status:
+      port: 18888
+      user: gorouter
+      password: c1oudc0w
+    servers:
+      z1:
+        - 192.168.10.10
+      z2: []
+
+  login:
+    enabled: false
+
+  loggregator:
+    status:
+      user: loggregator
+      password: c1oudc0w
+      port: 5768
+    incoming_port: 3456
+    outgoing_port: 38080
+    servers:
+      default:
+        - 192.168.10.10
+
+  traffic_controller:
+    zone: default
+    status:
+      user: trafic_controller
+      password: c1oudc0w
+      port: 6789
+    incoming_port: 13456
+    outgoing_port: 48080
+
+  loggregator_endpoint:
+    shared_secret: c1oudc0w
+    host: 192.168.10.10
+    use_ssl:  false
+    port: 443
+
+  ha_proxy:
+    ssl_pem: |
+      -----BEGIN CERTIFICATE-----
+      MIICLzCCAZgCCQCSoIG3LoeSMTANBgkqhkiG9w0BAQUFADBcMQswCQYDVQQGEwJV
+      UzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xEDAOBgNVBAoT
+      B1Bpdm90YWwxFjAUBgNVBAsTDUNsb3VkIEZvdW5kcnkwHhcNMTMxMDE3MjMxNzM5
+      WhcNMTQxMDE3MjMxNzM5WjBcMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAU
+      BgNVBAcTDVNhbiBGcmFuY2lzY28xEDAOBgNVBAoTB1Bpdm90YWwxFjAUBgNVBAsT
+      DUNsb3VkIEZvdW5kcnkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANqyjJMH
+      FDbJ4XM2vLRxz6i82Gd2Y2dnAKYgu67FgheHGQJSv38lvn8JrAOBXu2QJgP8sJa+
+      XqUWUTMo9BWvhvedQLojtcpLdULc0FhlIXn8bThGlTQyrSg9QJobhQZGziFVrdQM
+      UZy4X+s6A2Szb9iOg3TYibnnfnuvdZli83eRAgMBAAEwDQYJKoZIhvcNAQEFBQAD
+      gYEAbFu65WT+czpiJqHhNz5AnGYA8kieVlV7KhcljLtsU4Sxut5Vq9uXFBE09KCg
+      YkyZ9KfzXArTeRCfcbm5xq12I+1nf6q0QjT1y3P6ztax0rpyb0i+4GWvA+ruMhfx
+      n4QM1MkiJVYBGKkXFZDd1zsdR3pY4vm1uiMY75IvJQfgb08=
+      -----END CERTIFICATE-----
+      -----BEGIN RSA PRIVATE KEY-----
+      MIICXQIBAAKBgQDasoyTBxQ2yeFzNry0cc+ovNhndmNnZwCmILuuxYIXhxkCUr9/
+      Jb5/CawDgV7tkCYD/LCWvl6lFlEzKPQVr4b3nUC6I7XKS3VC3NBYZSF5/G04RpU0
+      Mq0oPUCaG4UGRs4hVa3UDFGcuF/rOgNks2/YjoN02Im55357r3WZYvN3kQIDAQAB
+      AoGAa88G81fTBCtDA1vhbIaKWuE1QNOgrxGcxUhvnPlqZxTHJFkMY66EmPV4oYW9
+      +RhNVTvVBYq092boAnNW1/Xebvrk1SnBDkrLntnGPmExkatOkPTFFlNXfePu6qOJ
+      ULwYg8rKRwpvLoQXxbzMDXApPBifBNWGHVneGuHLpwPEQgECQQD0IJOecEyorrCR
+      6+wmJBS/IwqQO0Ooj7kZEg65MHi9exVe+XFvP0lW2NAUsDuBLz79hjslSqIJjRG8
+      c6q36oqhAkEA5VVeEip+T4DV12I5A5maGexVMeC92K7EGU/H8YhltxVZ/RtNngdT
+      3r19WeDbDF7R5CJy2f7AYullk3S6fkk28QJBALdEiW1k4rezRMyW7tYHOifvN2vl
+      gbpWAt/GRZVSxSGB+B4vZq/cM8NlynftgQ5PGJucnGQ3bgN7irgNoTimc2ECQFMX
+      QBMy5DroAhKcmu2r/IKB90gwFnjosVI+bsIbWkcgbE9hUhj8rK2aWE11Q8hSnpea
+      x6QmQgxUZiIr+9n/qvECQQDiDIeSmo2mRYsaqr4CQ3Ak+EDjsm9XTpXHuqm+xgFO
+      iDIeQCWd3/twqdDTR7FaDE7Q0i559u7A1yLumUn8caLF
+      -----END RSA PRIVATE KEY-----

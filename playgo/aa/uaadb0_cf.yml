@@ -1,0 +1,304 @@
+deployment: cf
+jobs:
+- name: nats
+  template:
+  - nats
+  - nats_stream_forwarder
+- name: nfs_server
+  template:
+  - debian_nfs_server
+- name: database
+  template:
+  - postgres
+- name: ccdb
+  template:
+  - postgres
+- name: uaadb
+  template:
+  - postgres
+- name: cloud_controller_ng
+  template:
+  - cloud_controller_ng
+  - cloud_controller_worker
+  - cloud_controller_clock
+- name: gorouter
+  template:
+  - gorouter
+- name: uaa
+  template:
+  - uaa
+- name: hm9000
+  template:
+  - hm9000
+- name: haproxy
+  template:
+  - haproxy
+- name: dea
+  template:
+  - dea_logging_agent
+  - dea_next
+- name: etcd
+  template:
+  - etcd
+- name: syslog_aggregator
+  template:
+  - syslog_aggregator
+- name: loggregator
+  template:
+  - loggregator
+  - loggregator_trafficcontroller
+- name: login
+  template:
+  - login
+- name: collector
+  template:
+  - collector
+properties:
+  app_domains:
+  - test.jiawei.zhou
+  cc:
+    bulk_api_password: c1oudc0w
+    ccng.logging_level: debug2
+    db_encryption_key: c1oudc0w
+    db_logging_level: debug2
+    hm9000_noop: false
+    install_buildpacks:
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: buildpack_ruby
+    - name: nodejs_buildpack
+      package: buildpack_nodejs
+    quota_definitions:
+      default:
+        memory_limit: 10240
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 100
+        trial_db_allowed: true
+    srv_api_uri: http://api.test.jiawei.zhou
+    staging_upload_password: c1oudc0w
+    staging_upload_user: uploaduser
+  ccdb:
+    address: 10.10.101.4
+    databases:
+    - citext: true
+      name: ccdb
+      tag: cc
+    db_scheme: postgres
+    port: 5524
+    roles:
+    - name: ccadmin
+      password: c1oudc0w
+      tag: admin
+  ccdb_ng:
+    address: 192.168.10.10
+    databases:
+    - citext: true
+      name: ccdb
+      tag: cc
+    db_scheme: postgres
+    port: 5524
+    roles:
+    - name: ccadmin
+      password: c1oudc0w
+      tag: admin
+  ccng:
+    bulk_api_password: c1oudc0w
+    ccng.logging_level: debug2
+    db_encryption_key: c1oudc0w
+    db_logging_level: debug2
+    hm9000_noop: false
+    install_buildpacks:
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: buildpack_ruby
+    - name: nodejs_buildpack
+      package: buildpack_nodejs
+    quota_definitions:
+      default:
+        memory_limit: 10240
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 100
+        trial_db_allowed: true
+    srv_api_uri: http://api.test.jiawei.zhou
+    staging_upload_password: c1oudc0w
+    staging_upload_user: uploaduser
+  databases:
+    address: 10.10.101.4
+    databases:
+    - citext: true
+      name: ccdb
+      tag: cc
+    - citext: true
+      name: uaadb
+      tag: uaa
+    db_scheme: postgres
+    port: 5524
+    roles:
+    - name: ccadmin
+      password: c1oudc0w
+      tag: admin
+    - name: uaaadmin
+      password: c1oudc0w
+      tag: admin
+  db: uaadb
+  dea_next: {}
+  directory_server_protocol: http
+  disk_quota_enabled: true
+  domain: test.jiawei.zhou
+  etcd:
+    machines:
+    - 10.10.101.6
+    - 10.10.101.141
+    - 10.10.101.142
+  ha_proxy:
+    ssl_pem: |
+      -----BEGIN CERTIFICATE-----
+      MIICLzCCAZgCCQCSoIG3LoeSMTANBgkqhkiG9w0BAQUFADBcMQswCQYDVQQGEwJV
+      UzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xEDAOBgNVBAoT
+      B1Bpdm90YWwxFjAUBgNVBAsTDUNsb3VkIEZvdW5kcnkwHhcNMTMxMDE3MjMxNzM5
+      WhcNMTQxMDE3MjMxNzM5WjBcMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAU
+      BgNVBAcTDVNhbiBGcmFuY2lzY28xEDAOBgNVBAoTB1Bpdm90YWwxFjAUBgNVBAsT
+      DUNsb3VkIEZvdW5kcnkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANqyjJMH
+      FDbJ4XM2vLRxz6i82Gd2Y2dnAKYgu67FgheHGQJSv38lvn8JrAOBXu2QJgP8sJa+
+      XqUWUTMo9BWvhvedQLojtcpLdULc0FhlIXn8bThGlTQyrSg9QJobhQZGziFVrdQM
+      UZy4X+s6A2Szb9iOg3TYibnnfnuvdZli83eRAgMBAAEwDQYJKoZIhvcNAQEFBQAD
+      gYEAbFu65WT+czpiJqHhNz5AnGYA8kieVlV7KhcljLtsU4Sxut5Vq9uXFBE09KCg
+      YkyZ9KfzXArTeRCfcbm5xq12I+1nf6q0QjT1y3P6ztax0rpyb0i+4GWvA+ruMhfx
+      n4QM1MkiJVYBGKkXFZDd1zsdR3pY4vm1uiMY75IvJQfgb08=
+      -----END CERTIFICATE-----
+      -----BEGIN RSA PRIVATE KEY-----
+      MIICXQIBAAKBgQDasoyTBxQ2yeFzNry0cc+ovNhndmNnZwCmILuuxYIXhxkCUr9/
+      Jb5/CawDgV7tkCYD/LCWvl6lFlEzKPQVr4b3nUC6I7XKS3VC3NBYZSF5/G04RpU0
+      Mq0oPUCaG4UGRs4hVa3UDFGcuF/rOgNks2/YjoN02Im55357r3WZYvN3kQIDAQAB
+      AoGAa88G81fTBCtDA1vhbIaKWuE1QNOgrxGcxUhvnPlqZxTHJFkMY66EmPV4oYW9
+      +RhNVTvVBYq092boAnNW1/Xebvrk1SnBDkrLntnGPmExkatOkPTFFlNXfePu6qOJ
+      ULwYg8rKRwpvLoQXxbzMDXApPBifBNWGHVneGuHLpwPEQgECQQD0IJOecEyorrCR
+      6+wmJBS/IwqQO0Ooj7kZEg65MHi9exVe+XFvP0lW2NAUsDuBLz79hjslSqIJjRG8
+      c6q36oqhAkEA5VVeEip+T4DV12I5A5maGexVMeC92K7EGU/H8YhltxVZ/RtNngdT
+      3r19WeDbDF7R5CJy2f7AYullk3S6fkk28QJBALdEiW1k4rezRMyW7tYHOifvN2vl
+      gbpWAt/GRZVSxSGB+B4vZq/cM8NlynftgQ5PGJucnGQ3bgN7irgNoTimc2ECQFMX
+      QBMy5DroAhKcmu2r/IKB90gwFnjosVI+bsIbWkcgbE9hUhj8rK2aWE11Q8hSnpea
+      x6QmQgxUZiIr+9n/qvECQQDiDIeSmo2mRYsaqr4CQ3Ak+EDjsm9XTpXHuqm+xgFO
+      iDIeQCWd3/twqdDTR7FaDE7Q0i559u7A1yLumUn8caLF
+      -----END RSA PRIVATE KEY-----
+  logger_endpoint:
+    shared_secret: c1oudc0w
+  loggregator:
+    incoming_port: 3456
+    outgoing_port: 38080
+    servers:
+      default:
+      - 10.10.101.10
+      - 10.10.101.151
+      - 10.10.101.152
+    status:
+      password: c1oudc0w
+      port: 5768
+      user: loggregator
+  loggregator_endpoint:
+    host: 10.10.101.10
+    port: 443
+    shared_secret: c1oudc0w
+    use_ssl: false
+  login:
+    enabled: false
+  nats:
+    address: 10.10.101.2
+    machines:
+    - 10.10.101.2
+    - 10.10.101.133
+    - 10.10.101.134
+    password: c1oudc0w
+    port: 4222
+    user: nats
+  networks:
+    apps: default
+  nfs_server:
+    address: 10.10.101.3
+    network: 10.10.101.3/24
+  router:
+    port: 8888
+    servers:
+      z1:
+      - 10.10.101.13
+      - 10.10.101.177
+      - 10.10.101.178
+      - 10.10.101.179
+      - 10.10.101.180
+      - 10.10.101.181
+      z2: []
+    status:
+      password: c1oudc0w
+      port: 18888
+      user: gorouter
+  ssl:
+    skip_cert_verify: true
+  syslog_aggregator:
+    port: 54321
+  system_domain: test.jiawei.zhou
+  system_domain_organization: DevBox
+  traffic_controller:
+    incoming_port: 13456
+    outgoing_port: 48080
+    status:
+      password: c1oudc0w
+      port: 6789
+      user: trafic_controller
+    zone: default
+  uaa:
+    admin:
+      client_secret: c1oudc0w
+    batch:
+      password: c1oudc0w
+      username: batch-username
+    catalina_opts: -Xmx384m -XX:MaxPermSize=128m
+    cc:
+      client_secret: c1oudc0w
+    clients: {}
+    jwt:
+      signing_key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIICXAIBAAKBgQDHFr+KICms+tuT1OXJwhCUmR2dKVy7psa8xzElSyzqx7oJyfJ1
+        JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMXqHxf+ZH9BL1gk9Y6kCnbM5R6
+        0gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBugspULZVNRxq7veq/fzwIDAQAB
+        AoGBAJ8dRTQFhIllbHx4GLbpTQsWXJ6w4hZvskJKCLM/o8R4n+0W45pQ1xEiYKdA
+        Z/DRcnjltylRImBD8XuLL8iYOQSZXNMb1h3g5/UGbUXLmCgQLOUUlnYt34QOQm+0
+        KvUqfMSFBbKMsYBAoQmNdTHBaz3dZa8ON9hh/f5TT8u0OWNRAkEA5opzsIXv+52J
+        duc1VGyX3SwlxiE2dStW8wZqGiuLH142n6MKnkLU4ctNLiclw6BZePXFZYIK+AkE
+        xQ+k16je5QJBAN0TIKMPWIbbHVr5rkdUqOyezlFFWYOwnMmw/BKa1d3zp54VP/P8
+        +5aQ2d4sMoKEOfdWH7UqMe3FszfYFvSu5KMCQFMYeFaaEEP7Jn8rGzfQ5HQd44ek
+        lQJqmq6CE2BXbY/i34FuvPcKU70HEEygY6Y9d8J3o6zQ0K9SYNu+pcXt4lkCQA3h
+        jJQQe5uEGJTExqed7jllQ0khFJzLMx0K6tj0NeeIzAaGCQz13oo2sCdeGRHO4aDh
+        HH6Qlq/6UOV5wP8+GAcCQFgRCcB+hrje8hfEEefHcFpyKH+5g1Eu1k0mLrxK2zd+
+        4SlotYRHgPCEubokb2S1zfZDWIXW3HmggnGgM949TlY=
+        -----END RSA PRIVATE KEY-----
+      verification_key: |
+        -----BEGIN PUBLIC KEY-----
+        MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHFr+KICms+tuT1OXJwhCUmR2d
+        KVy7psa8xzElSyzqx7oJyfJ1JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMX
+        qHxf+ZH9BL1gk9Y6kCnbM5R60gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBug
+        spULZVNRxq7veq/fzwIDAQAB
+        -----END PUBLIC KEY-----
+    login:
+      addnew: false
+    no_ssl: true
+    scim:
+      users:
+      - admin|c1oudc0w|scim.write,scim.read,openid,cloud_controller.admin
+    url: http://uaa.test.jiawei.zhou
+  uaadb:
+    address: 10.10.101.4
+    databases:
+    - citext: true
+      name: uaadb
+      tag: uaa
+    db_scheme: postgresql
+    port: 5524
+    roles:
+    - name: uaaadmin
+      password: c1oudc0w
+      tag: admin
