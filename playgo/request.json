@@ -1,0 +1,20 @@
+{
+	"name":"testreg11",
+	"replicas":1,
+	"containername":"testreg11",
+	"containerimage": "7-jre-customize",
+	"containerPort": [
+        {
+            "port":8080,
+            "protocol":"TCP"
+        }
+    ],
+	"volumes":[
+				{
+					"name": "iscsipd-ro1",
+					"hostPath":{
+						"path":"/home/vcap/logtest"
+					}
+				}
+			]	
+}
