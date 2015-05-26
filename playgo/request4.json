@@ -1,0 +1,5 @@
+{
+	"containername":"php-redis",
+	"containerimage": "kubernetes/example-guestbook-php-redis:v2",
+	"warpath":""
+}

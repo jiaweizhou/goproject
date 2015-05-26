@@ -1,0 +1,22 @@
+{
+   "kind":"Service",
+   "apiVersion":"v1beta3",
+   "metadata":{
+      "name":"services-jre7",
+      "labels":{
+         "name":"services-jre7"
+      }
+   },
+   "spec":{
+      "ports": [
+        {
+          "port":8080,
+          "targetPort":8080,
+          "protocol":"TCP"
+        }
+      ],
+      "selector":{
+         "name":"testreg11"
+      }
+   }
+}

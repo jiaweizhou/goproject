@@ -7,6 +7,7 @@ import (
 	//"golang.org/x/crypto/ssh/terminal"
 	"io"
 	//"io/ioutil"
+	"bufio"
 	"log"
 	//"os"
 	//"strings"
@@ -80,12 +81,21 @@ func cmd(host string, user string, password string, cmd string) {
 		//stdin.Write([]byte("exit\n"))
 		//stdin.Write([]byte("exit\n"))
 		fmt.Println("bbbb")
-		var buf bytes.Buffer
-		if _, err := io.Copy(&buf, stdout); err != nil {
-			fmt.Println(err.Error())
-		}
+		//var buf bytes.Buffer
+		/*
+			if _, err := io.Copy(&buf, stdout); err != nil {
+				fmt.Println(err.Error())
+			}*/
 		//fmt.Println("bbbb")
-		fmt.Println("%s", buf.String())
+		//fmt.Println("%s", buf.String())
+		out := bufio.NewReader(stdout)
+		for {
+			line, _, err := out.ReadLine()
+			if err == io.EOF {
+				break
+			}
+			fmt.Println(string(line))
+		}
 		ch <- 1
 	}()
 	<-ch
